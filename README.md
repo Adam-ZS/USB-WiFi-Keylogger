@@ -1,13 +1,12 @@
 # USB WiFi Keylogger
-> Academic Cybersecurity Project — CSE499A Capstone
-
-A hardware USB pass-through keylogger using an Arduino Pro Micro, USB Host Shield (MAX3421E), and ESP32. Captures keystrokes from any USB keyboard and serves them over WiFi via a browser interface.
+> Academic Cybersecurity Project
+A hardware USB pass-through keylogger using an Arduino Pro Micro, USB Host Shield (MAX3421E), and ESP32. Captures keystrokes from any USB keyboard, sends them to PC and serves them over WiFi via a browser interface.
 
 ---
 
 ## ⚠️ Disclaimer
 
-This project was built strictly for academic and educational purposes as part of a university cybersecurity capstone project. It must only be used on hardware you personally own in a controlled lab environment. Deploying this on any system without explicit written authorisation is illegal.
+This project was built strictly for academic and educational purposes as part of a cybersecurity capstone project. It must only be used on hardware you personally own in a controlled lab environment. Deploying this on any system without explicit written authorisation is illegal.
 
 ---
 
