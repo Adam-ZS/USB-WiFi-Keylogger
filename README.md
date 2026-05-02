@@ -1,6 +1,7 @@
 # USB WiFi Keylogger
 > Academic Cybersecurity Project
-A hardware USB pass-through keylogger using an Arduino Pro Micro, USB Host Shield (MAX3421E), and ESP32. Captures keystrokes from any USB keyboard, sends them to PC and serves them over WiFi via a browser interface.
+
+A hardware USB pass-through keylogger using an Arduino Pro Micro, USB Host Shield (MAX3421E), and ESP32. Captures keystrokes from any USB keyboard, forwards them transparently to the PC, and serves them over WiFi via a browser interface.
 
 ---
 
@@ -16,7 +17,7 @@ This project was built strictly for academic and educational purposes as part of
 [USB Keyboard]
       │
       ▼
-[USB-A Female Breakout]
+[USB-A Female Port]  ← built into the USB Host Shield Mini board
       │
       ▼
 [USB Host Shield / MAX3421E]  ← reads raw HID reports via SPI
@@ -36,16 +37,29 @@ This project was built strictly for academic and educational purposes as part of
 
 ---
 
+## Pictures
+
+**Arduino Pro Micro (ATmega32U4)**
+
+<img width="495" height="321" alt="image" src="https://github.com/user-attachments/assets/0d3a3a54-2014-419e-add2-67100fb6843f" />
+
+**USB Host Shield Mini (MAX3421E) — Female USB port is built in**
+
+<img width="458" height="311" alt="image" src="https://github.com/user-attachments/assets/60a337a7-e573-4ff3-b07d-f97c81d358f7" />
+
+---
+
 ## Hardware Required
 
-| Part | Notes | Status |
-|------|-------|--------|
-| Arduino Pro Micro (ATmega32U4) 5V/16MHz | Must be 32U4 — NOT Uno/Nano | Required |
-| USB Host Shield Mini (MAX3421E) | Mini version fits best | Required |
-| ESP32 Dev Module | Any ESP32 with WiFi | Required |
-| USB-A Female Breakout Board (4-pin DIP) | Keyboard plugs in here | Required |
-| Female-to-Female Dupont Jumper Wires | 10cm length ideal | Required |
-| Micro-USB to USB-A cable | Standard phone cable | Required |
+| Part | Notes |
+|------|-------|
+| Arduino Pro Micro (ATmega32U4) 5V/16MHz | Must be 32U4 — NOT Uno/Nano |
+| USB Host Shield Mini (MAX3421E) | Already has USB-A Female port built in |
+| ESP32 Dev Module | Any ESP32 with WiFi |
+| Female-to-Female Dupont Jumper Wires | 10cm length ideal |
+| Micro-USB to USB-A cable | Standard phone/Android cable |
+
+> ✅ No separate USB-A Female breakout board needed — the Host Shield Mini already has one built in.
 
 **Estimated cost: ~$14 USD (AliExpress/Temu)**
 
@@ -53,45 +67,36 @@ This project was built strictly for academic and educational purposes as part of
 
 ## Wiring
 
-### Pro Micro → USB Host Shield Mini (SPI)
+### Connection 1 — Pro Micro → USB Host Shield Mini (SPI)
 
-| Pro Micro | Host Shield | Colour |
-|-----------|-------------|--------|
-| VCC (5V)  | VCC         | Red    |
-| GND       | GND         | Black  |
-| Pin 10    | SS          | Yellow |
-| Pin 16    | MOSI        | Orange |
-| Pin 14    | MISO        | Green  |
-| Pin 15    | SCK         | Blue   |
+| Pro Micro Pin | Host Shield Pin | Wire Colour |
+|---------------|-----------------|-------------|
+| VCC (5V)      | VCC             | 🔴 Red      |
+| GND           | GND             | ⚫ Black    |
+| Pin 10        | SS              | 🟡 Yellow   |
+| Pin 16        | MOSI            | 🟠 Orange   |
+| Pin 14        | MISO            | 🟢 Green    |
+| Pin 15        | SCK             | 🔵 Blue     |
 
-### Pro Micro → ESP32 (Serial)
+### Connection 2 — Pro Micro → ESP32 (Serial)
 
-| Pro Micro     | ESP32          | Notes             |
+| Pro Micro Pin | ESP32 Pin      | Notes             |
 |---------------|----------------|-------------------|
-| 3.3V          | 3.3V           | NEVER use 5V      |
+| 3.3V          | 3.3V           | ⚠️ NEVER use 5V  |
 | GND           | GND            | Common ground     |
 | Pin 8 (TX1)   | GPIO16 (RX2)   | TX → RX (crossed) |
 | Pin 9 (RX1)   | GPIO17 (TX2)   | RX → TX (crossed) |
 
-### USB-A Female Breakout → USB Host Shield
-
-| USB-A Female  | Host Shield |
-|---------------|-------------|
-| Pin 1 — VBUS  | VBUS        |
-| Pin 2 — D−    | D−          |
-| Pin 3 — D+    | D+          |
-| Pin 4 — GND   | GND         |
-
 ### Where to Plug
 
-| Side    | Connection |
-|---------|------------|
-| INPUT   | USB Keyboard → USB-A Female breakout board |
-| OUTPUT  | Pro Micro Micro-USB port → PC USB port (via standard Micro-USB cable) |
+| Side   | Connection |
+|--------|------------|
+| INPUT  | USB Keyboard → USB-A Female port on the Host Shield Mini |
+| OUTPUT | Pro Micro Micro-USB → PC USB port (standard Micro-USB cable) |
 
-> ⚠️ ESP32 is 3.3V only. Never connect 5V — it will permanently damage the chip.
+> ⚠️ ESP32 is 3.3V only. Connecting 5V will permanently damage it.
 
-> ⚠️ TX/RX must be CROSSED: Pro Micro TX → ESP32 RX, Pro Micro RX → ESP32 TX.
+> ⚠️ TX/RX must be CROSSED: Pro Micro TX → ESP32 RX, and Pro Micro RX → ESP32 TX.
 
 ---
 
@@ -114,7 +119,7 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 2. Search `SparkFun AVR`
 3. Install **SparkFun AVR Boards**
 
-### Step 4 — Install Libraries
+### Step 4 — Install Required Library
 1. Go to `Tools > Manage Libraries`
 2. Search and install: **USB Host Shield Library 2.0** by Oleg Mazurov
 
@@ -125,32 +130,32 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 ### Flash ESP32 First
 1. Plug ESP32 into PC via its USB port
 2. In Arduino IDE:
-   - Board: `ESP32 Dev Module`
-   - Port: Select the ESP32 COM port
+   - `Tools > Board > ESP32 Dev Module`
+   - `Tools > Port >` select ESP32 COM port
 3. Open `src/esp32_wifi_server/esp32_wifi_server.ino`
-4. Click **Upload**
-5. Wait for `Done uploading`
+4. Click **Upload** and wait for `Done uploading`
 
 ### Flash Pro Micro Second
 1. Plug Pro Micro into PC via Micro-USB cable
 2. In Arduino IDE:
-   - Board: `SparkFun Pro Micro 5V 16MHz`
-   - Port: Select the Pro Micro COM port
+   - `Tools > Board > SparkFun Pro Micro 5V 16MHz`
+   - `Tools > Port >` select Pro Micro COM port
 3. Open `src/pro_micro_keylogger/pro_micro_keylogger.ino`
-4. Click **Upload**
-5. If upload fails: double-tap the reset button on Pro Micro then immediately click Upload
+4. Click **Upload** and wait for `Done uploading`
+
+> 💡 If upload fails on Pro Micro: double-tap the reset button then immediately click Upload.
 
 ---
 
 ## How to Use
 
-1. Plug USB keyboard into the **USB-A Female breakout board**
-2. Plug **Pro Micro Micro-USB** into the target PC using a standard Micro-USB cable
-3. PC detects it as a normal keyboard — all keystrokes pass through transparently
+1. Plug USB keyboard into the **USB-A Female port on the Host Shield Mini**
+2. Plug **Pro Micro Micro-USB** into the target PC via a standard Micro-USB cable
+3. PC detects it as a normal keyboard — keystrokes pass through transparently
 4. On your phone or laptop:
    - Connect to WiFi: `KeyloggerAP`
    - Password: `password123`
-5. Open browser and go to: `http://192.168.4.1`
+5. Open browser → go to `http://192.168.4.1`
 6. All keystrokes appear on the page, auto-refreshing every 5 seconds
 7. Click **Clear Log** to wipe the current log
 
@@ -176,14 +181,14 @@ usb-keylogger/
 
 ## Troubleshooting
 
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| PC doesn't detect keyboard | Pro Micro not flashed / SPI wrong | Re-flash, check pins 10/16/14/15 |
-| No WiFi network appears | ESP32 not powered | Check 3.3V wiring |
-| Keystrokes don't appear on page | TX/RX swapped | Swap Pin8 and Pin9 connections |
-| Upload fails on Pro Micro | Bootloader timing | Double-tap reset then upload |
-| ESP32 gets hot | Connected to 5V | Move to 3.3V pin immediately |
-| USB Host Shield not detected | SS pin wrong | Confirm Pin10 → SS |
+| Problem | Likely Cause | Fix |
+|---------|-------------|-----|
+| PC doesn't detect keyboard | Pro Micro not flashed / SPI wiring wrong | Re-flash, check pins 10/16/14/15 |
+| No WiFi network appears | ESP32 not powered correctly | Check 3.3V wiring |
+| Keystrokes don't appear on page | TX/RX wires swapped | Swap Pin 8 and Pin 9 connections to ESP32 |
+| Upload fails on Pro Micro | Bootloader timing issue | Double-tap reset then click Upload |
+| ESP32 gets hot | Connected to 5V instead of 3.3V | Move wire to 3.3V pin immediately |
+| USB Host Shield not detected | SS pin wrong | Confirm Pin 10 → SS |
 
 ---
 
@@ -191,10 +196,10 @@ usb-keylogger/
 
 | Board | Problem |
 |-------|---------|
-| Arduino Uno/Nano (ATmega328) | Cannot act as USB HID device |
-| Raspberry Pi 3/4/5 | No USB OTG — cannot be USB device to PC |
-| Raspberry Pi Pico (RP2040) | No native USB host |
-| ESP32 alone | No USB host or device |
+| Arduino Uno/Nano (ATmega328) | Cannot act as USB HID device to PC |
+| Raspberry Pi 3/4/5 | No USB OTG — cannot present as USB device |
+| Raspberry Pi Pico (RP2040) | No native USB host capability |
+| ESP32 alone | No USB host or USB device |
 
 ---
 
